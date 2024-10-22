@@ -1,5 +1,5 @@
 import { Typography, TypographyOwnProps } from '@mui/material'
-import '../../../assets/fonts/army-rust.ttf'
+import '../../../assets/fonts/quantico.ttf'
 
 export default function StyledTitle({
     variant,
@@ -7,15 +7,20 @@ export default function StyledTitle({
     children,
 }: {
     variant: TypographyOwnProps['variant']
-    color: string
+    color?: TypographyOwnProps['color']
     children: React.ReactNode
 }) {
     return (
         <Typography
             variant={variant}
             sx={{
-                fontFamily: '"Army Rust", sans-serif !important',
-                color: color,
+                fontFamily: '"Quantico", sans-serif !important',
+                background: color
+                    ? ''
+                    : 'linear-gradient(to bottom, #454545, #F9F2DD)',
+                WebkitBackgroundClip: color ? '' : 'text',
+                WebkitTextFillColor: color ? '' : 'transparent',
+                display: 'inline-block',
             }}
         >
             {children}

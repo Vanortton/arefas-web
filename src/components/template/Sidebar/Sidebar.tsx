@@ -1,16 +1,22 @@
 import {
     Diversity3Rounded,
+    KeyboardArrowLeftSharp,
+    KeyboardArrowRightSharp,
     ListAltRounded,
     PeopleAltRounded,
 } from '@mui/icons-material'
-import { Box, Theme, Typography, useTheme } from '@mui/material'
+import { Box, Button, Theme, Typography, useTheme } from '@mui/material'
+import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import styled from 'styled-components'
+import { GradientIcon } from '../GradientIcon/GradientIcon'
+import StyledTitle from '../StyledTitle/StyledTitle'
 
 const Container = styled.div<{ theme: Theme }>`
     grid-area: sidebar;
+    position: relative;
     padding: 20px 20px 10px 20px;
-    background-color: ${({ theme }) => theme.palette.primary.dark};
+    background-color: #101010;
     color: white;
     display: flex;
     flex-direction: column;
@@ -20,81 +26,98 @@ const Container = styled.div<{ theme: Theme }>`
 const ButtonLink = styled.a<{ $active: boolean; theme: Theme }>`
     border: none;
     outline: none;
-    background: ${({ $active, theme }) =>
-        $active
-            ? `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
-            : '#144c2340'};
+    background: ${({ $active }) => ($active ? '#303030' : '#404040')};
     box-shadow: ${({ $active }) =>
-        $active ? '0px 0px 8px black !important' : 'none'};
+        $active
+            ? 'inset 3px 3px 8px rgba(0,0,0,0.8), inset -3px -3px 8px rgba(255,255,255,0.1) !important'
+            : '3px 3px 8px #000'};
     color: white;
     padding: 5px 12px;
-    border-radius: 5px;
     cursor: pointer;
     width: 100%;
     display: flex;
     align-items: center;
     gap: 10px;
     text-decoration: none;
-    transition: all 0.5s;
+    transition: all 0.3s;
+    border-radius: 0px;
+    position: relative;
+
     &:hover {
-        box-shadow: 0px 0px 10px ${({ theme }) => theme.palette.primary.main};
+        box-shadow: 0px 0px 10px #ffffff50;
     }
 `
 
 export default function Sidebar() {
     const theme = useTheme()
     const location = useLocation()
-    const circularImage = {
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-    }
+    const [isOpen, setIsOpen] = useState<boolean>(true)
+
+    const links = [
+        {
+            title: 'Associados',
+            icon: Diversity3Rounded,
+            href: '/dashboard/members',
+        },
+        {
+            title: 'Ficha',
+            icon: ListAltRounded,
+            href: '/dashboard/members/form',
+        },
+        {
+            title: 'Usuários',
+            icon: PeopleAltRounded,
+            href: '/dashboard/users',
+        },
+    ]
 
     return (
         <Container theme={theme}>
             <Box>
+                <Box>
+                    {links.map((link, index) => (
+                        <ButtonLink
+                            theme={theme}
+                            href={`#${link.href}`}
+                            $active={location.pathname === link.href}
+                            className='mt-3'
+                            key={index}
+                        >
+                            <GradientIcon
+                                icon={link.icon}
+                                gradientColors={['#dbdbdb', '#707070']}
+                            />
+                            {isOpen && (
+                                <StyledTitle variant='body1'>
+                                    {link.title.toUpperCase()}
+                                </StyledTitle>
+                            )}
+                        </ButtonLink>
+                    ))}
+                </Box>
                 <Box
                     sx={{
                         display: 'flex',
-                        flexDirection: 'column',
-                        gap: '10px',
-                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginTop: '30px',
                     }}
                 >
-                    <img
-                        src='https://via.placeholder.com/100x100'
-                        alt='Logo da AREFAS'
-                        style={circularImage}
-                    />
-                    <Typography variant='h6'>John Doe</Typography>
-                </Box>
-                <Box>
-                    <ButtonLink
-                        theme={theme}
-                        href='#/dashboard/members'
-                        $active={location.pathname === '/dashboard/members'}
-                        className='mt-3'
+                    <Button
+                        variant='contained'
+                        onClick={() => setIsOpen(!isOpen)}
+                        sx={{
+                            borderRadius: '0px !important',
+                            minWidth: '0px !important',
+                            padding: '6px',
+                            backgroundColor: '#303030',
+                        }}
                     >
-                        <Diversity3Rounded /> Associados
-                    </ButtonLink>
-                    <ButtonLink
-                        theme={theme}
-                        href='#/dashboard/members-form'
-                        $active={
-                            location.pathname === '/dashboard/members-form'
-                        }
-                        className='mt-3'
-                    >
-                        <ListAltRounded /> Ficha
-                    </ButtonLink>
-                    <ButtonLink
-                        theme={theme}
-                        href='#/dashboard/users'
-                        $active={location.pathname === '/dashboard/users'}
-                        className='mt-3'
-                    >
-                        <PeopleAltRounded /> Usuários
-                    </ButtonLink>
+                        {isOpen ? (
+                            <KeyboardArrowLeftSharp />
+                        ) : (
+                            <KeyboardArrowRightSharp />
+                        )}
+                    </Button>
                 </Box>
             </Box>
             <Box>

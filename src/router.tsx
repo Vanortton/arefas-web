@@ -1,10 +1,10 @@
-import { Navigate, Route, HashRouter as Router, Routes } from 'react-router-dom'
+import { Route, HashRouter as Router, Routes } from 'react-router-dom'
 import Auth from './components/pages/Auth/Auth'
 import Dashboard from './components/pages/Dashboard'
+import Form from './components/pages/Form/Form'
 import Members from './components/pages/Members/Members'
-import MembersForm from './components/pages/MembersForm/MembersForm'
 import NotFound from './components/pages/NotFound/NotFound'
-import Users from './components/pages/Users/Users'
+import { FormProvider } from './contexts/FormContext'
 
 export default function AppRouter() {
     const routes = [
@@ -17,25 +17,17 @@ export default function AppRouter() {
             element: <Dashboard />,
             children: [
                 {
-                    index: true,
-                    element: (
-                        <Navigate
-                            to='members'
-                            replace
-                        />
-                    ),
-                },
-                {
                     path: 'members',
+                    index: true,
                     element: <Members />,
                 },
                 {
-                    path: 'members-form',
-                    element: <MembersForm />,
-                },
-                {
-                    path: 'users',
-                    element: <Users />,
+                    path: 'members/form',
+                    element: (
+                        <FormProvider>
+                            <Form />
+                        </FormProvider>
+                    ),
                 },
             ],
         },

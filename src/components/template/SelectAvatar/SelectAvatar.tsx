@@ -1,4 +1,6 @@
+import { PanoramaOutlined } from '@mui/icons-material'
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
@@ -6,15 +8,23 @@ import {
     DialogTitle,
     IconButton,
     Slider,
+    Typography,
 } from '@mui/material'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Cropper, { Area } from 'react-easy-crop'
-import ImagePlaceholder from '../../../assets/imgs/select-image-placeholder.png'
 import SimpleMenu from '../SimpleMenu/SimpleMenu'
 import getCroppedImg from './getCroppedImg'
 
-export default function SelectAvatar() {
-    const [image, setImage] = useState<string | null>(null)
+type SelectAvatarProps = {
+    imageURL?: string
+    onImageChange: (image: File | null) => void
+}
+
+export default function SelectAvatar({
+    imageURL,
+    onImageChange,
+}: SelectAvatarProps) {
+    const [image, setImage] = useState<string | null>(imageURL || null)
     const [croppedArea, setCroppedArea] = useState<Area | null>(null)
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1)
@@ -35,35 +45,62 @@ export default function SelectAvatar() {
     const handleCropComplete = async () => {
         if (image && croppedArea) {
             const croppedImage = await getCroppedImg(image, croppedArea)
-            setImage(croppedImage)
+            const blob = await fetch(croppedImage).then((r) => r.blob())
+            const file = new File([blob], 'avatar.png', { type: 'image/png' })
+            setImage(URL.createObjectURL(blob))
+            onImageChange(file)
             setOpenDialog(false)
         }
+    }
+
+    const handleRemoveImage = () => {
+        setImage(null)
+        onImageChange(null)
+    }
+
+    const handleInsertImage = () => {
+        document.getElementById('imageInput')?.click()
     }
 
     const menuItems = [
         {
             label: 'Remover imagem',
-            onClick: () => setImage(null),
+            onClick: handleRemoveImage,
         },
         {
             label: 'Inserir nova imagem',
-            onClick: () => document.getElementById('imageInput')?.click(),
+            onClick: handleInsertImage,
         },
     ]
 
+    useEffect(() => {
+        if (image) {
+            const fetchImageBlob = async () => {
+                const response = await fetch(image)
+                const blob = await response.blob()
+                const file = new File([blob], 'avatar.png', { type: blob.type })
+
+                // Verifique se a imagem é diferente antes de chamar onImageChange
+                if (file) onImageChange(file)
+            }
+            fetchImageBlob()
+        } else {
+            onImageChange(null)
+        }
+    }, [image]) // Removido onImageChange como dependência
+
     return (
-        <div>
+        <Box sx={{ width: 'fit-content' }}>
             {image ? (
                 <SimpleMenu
                     trigger={
-                        <IconButton>
+                        <IconButton className='p-0'>
                             <img
                                 src={image}
                                 alt='Selecionar'
                                 style={{
-                                    width: 100,
-                                    height: 100,
-                                    borderRadius: '50%',
+                                    width: 90,
+                                    height: 120,
                                     objectFit: 'cover',
                                 }}
                             />
@@ -72,20 +109,47 @@ export default function SelectAvatar() {
                     items={menuItems}
                 />
             ) : (
-                <IconButton
-                    onClick={() =>
-                        document.getElementById('imageInput')?.click()
-                    }
-                    sx={{
-                        boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.4)',
-                    }}
-                >
-                    <img
-                        src={ImagePlaceholder}
-                        alt='Inserir'
-                        style={{ width: 100, height: 100, borderRadius: '50%' }}
-                    />
-                </IconButton>
+                <Box sx={{ cursor: 'pointer', position: 'relative' }}>
+                    <IconButton
+                        onClick={handleInsertImage}
+                        sx={{
+                            boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.4)',
+                            padding: '20px',
+                            width: 90,
+                            height: 120,
+                            backgroundColor: '#000000',
+                            borderRadius: '0%',
+                            '&:hover': {
+                                boxShadow: '5px 5px 0px #333',
+                                backgroundColor: '#000000',
+                            },
+                        }}
+                    >
+                        <PanoramaOutlined
+                            sx={{
+                                fontSize: 60,
+                                color: '#7c8188',
+                            }}
+                        />
+                    </IconButton>
+                    <Box
+                        sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            width: '100%',
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            padding: '2px 0',
+                        }}
+                    >
+                        <Typography
+                            sx={{ color: 'white', fontSize: 12 }}
+                            className='text-center'
+                        >
+                            Carregar
+                        </Typography>
+                    </Box>
+                </Box>
             )}
 
             <input
@@ -116,7 +180,7 @@ export default function SelectAvatar() {
                                 image={image}
                                 crop={crop}
                                 zoom={zoom}
-                                aspect={1}
+                                aspect={3 / 4}
                                 onCropChange={setCrop}
                                 onZoomChange={setZoom}
                                 onCropComplete={(_, croppedAreaPixels) =>
@@ -140,6 +204,6 @@ export default function SelectAvatar() {
                     <Button onClick={handleCropComplete}>Cortar</Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </Box>
     )
 }
